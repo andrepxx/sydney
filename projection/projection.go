@@ -54,11 +54,11 @@ func (this *mercatorProjectionStruct) Inverse(loc coordinates.Cartesian) coordin
 	x := loc.X()
 	y := loc.Y()
 	longitude := MATH_TWO_PI * x
-	yA := math.Exp(y)
-	yB := math.Atan(yA)
-	yC := 2.0 * yB
-	yD := yC - MATH_HALF_PI
-	latitude := MATH_TWO_PI * yD
+	yA := MATH_TWO_PI * y
+	yB := math.Exp(yA)
+	yC := math.Atan(yB)
+	yD := 2.0 * yC
+	latitude := yD - MATH_HALF_PI
 	proj := coordinates.CreateGeographic(longitude, latitude)
 	return proj
 }

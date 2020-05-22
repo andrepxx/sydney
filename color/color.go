@@ -31,9 +31,41 @@ func clamp(value float64, min float64, max float64) float64 {
 }
 
 /*
+ * Data structure representing a simple color mapping.
+ */
+type simpleMappingStruct struct {
+	foreground color.NRGBA
+}
+
+/*
  * Data structure representing the default color mapping.
  */
 type defaultMappingStruct struct {
+}
+
+/*
+ * Map each count to a color value.
+ */
+func (this *simpleMappingStruct) Map(counts []uint64) []color.NRGBA {
+	n := len(counts)
+	colors := make([]color.NRGBA, n)
+	fg := this.foreground
+
+	/*
+	 * Map each count in the distribution to a color value.
+	 */
+	for i, count := range counts {
+
+		/*
+		 * Check if there are dots in this cell.
+		 */
+		if count > 0 {
+			colors[i] = fg
+		}
+
+	}
+
+	return colors
 }
 
 /*
@@ -128,6 +160,32 @@ func (this *defaultMappingStruct) Map(counts []uint64) []color.NRGBA {
 	}
 
 	return colors
+}
+
+/*
+ * Create a new simple color mapping, which maps all cells with hits to a
+ * predefined color.
+ */
+func SimpleMapping(red uint8, green uint8, blue uint8) Mapping {
+
+	/*
+	 * Create forground color.
+	 */
+	c := color.NRGBA {
+		R: red,
+		G: green,
+		B: blue,
+		A: 255,
+	}
+
+	/*
+	 * Create simple color mapping.
+	 */
+	m := simpleMappingStruct{
+		foreground: c,
+	}
+
+	return &m
 }
 
 /*

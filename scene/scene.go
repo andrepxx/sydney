@@ -15,6 +15,7 @@ type Scene interface {
 	Aggregate(data []coordinates.Cartesian) error
 	Clear()
 	Render(mapping color.Mapping) (*image.NRGBA, error)
+	Spread(amount uint8)
 }
 
 /*
@@ -210,13 +211,102 @@ func (this *sceneStruct) Render(mapping color.Mapping) (*image.NRGBA, error) {
 }
 
 /*
+ * Spreads data over multiple cells.
+ */
+func (this *sceneStruct) Spread(amount uint8) {
+	
+	/*
+	 * Only spread if needed.
+	 */
+	if amount > 0 {
+		bins := this.bins
+		numBins := len(bins)
+		binsNew := make([]uint64, numBins)
+		height := this.height
+		width := this.width
+		amount64 := int64(amount)
+		
+		/*
+		 * Iterate over the target rows.
+		 */
+		for y := uint32(0); y < height; y++ {
+			y64 := int64(y)
+			
+			/*
+			 * Iterate over the target columns.
+			 */
+			for x := uint32(0); x < width; x++ {
+				x64 := int64(x)
+				sum := uint64(0)
+				
+				/*
+				 * Spread across rows.
+				 */
+				for j := -amount64; j <= amount64; j++ {
+					
+					/*
+					 * Spread across columns.
+					 */
+					for i := -amount64; i <= amount64; i++ {
+						xx64 := x64 + i
+						yy64 := y64 + j
+						
+						/*
+						 * Check if values are in range.
+						 */
+						if xx64 > 0 && xx64 <= math.MaxUint32 && yy64 > 0 && yy64 < math.MaxUint32 {
+							xx := uint32(xx64)
+							yy := uint32(yy64)
+							idxSource, ok := this.index(xx, yy)
+							sumOld := sum
+							
+							/*
+							 * Check if index is in range.
+							 */
+							if ok {
+								sum += bins[idxSource]
+								
+								/*
+								 * Check for overflow.
+								 */
+								if sum < sumOld {
+									sum = math.MaxUint64
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				idxTarget, ok := this.index(x, y)
+				
+				/*
+				 * Check if index was calculated.
+				 */
+				if ok {
+					binsNew[idxTarget] = sum
+				}
+				
+			}
+			
+		}
+		
+		this.bins = binsNew
+	}
+
+}
+
+/*
  * Create a new scene.
  */
 func Create(width uint32, height uint32, minX float64, maxX float64, minY float64, maxY float64) Scene {
 	width64 := uint64(width)
 	height64 := uint64(height)
-	nbins := width64 * height64
-	bins := make([]uint64, nbins)
+	numBins := width64 * height64
+	bins := make([]uint64, numBins)
 
 	/*
 	 * Create scene data structure.

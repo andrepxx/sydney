@@ -17,6 +17,8 @@ import (
 	"image"
 	imagecolor "image/color"
 	"image/draw"
+	"image/png"
+	"os"
 )
 ```
 
@@ -76,7 +78,7 @@ Since `color.Mapping` is an interface, you can easily implement your own custom 
 The resulting image will be transparent, so you will probably want to overlay it on some background. We will choose a black background here and draw our rendered image data over it.
 
 ```golang
-dim := image.Rect(800, 800)
+dim := image.Rect(0, 0, 800, 800)
 target := image.NewNRGBA(dim)
 
 /*
@@ -94,10 +96,30 @@ draw.Draw(target, dim, uniform, image.ZP, draw.Over)
 draw.Draw(target, dim, img, image.ZP, draw.Over)
 ```
 
-You may then use the Go standard library to process the `target` image further, e. g. by serializing it into a PNG file.
+
+7. Serializing into a PNG file.
+
+```golang
+enc := png.Encoder{
+	CompressionLevel: png.BestCompression,
+}
+
+fd, err := os.Create("output.png")
+
+/*
+ * Check if there was an error creating the file.
+ */
+if err != nil {
+	msg := err.Error()
+	fmt.Printf("Error creating output file: %s", msg)
+} else {
+	enc.Encode(fd, target)
+	fd.Close()
+}
+```
 
 
-7. Working with geographic data.
+8. Working with geographic data.
 
 Since *sydney* was designed to work with large sets of geographic data, it has inbuilt support for projecting such data into a Cartesian coordinate system. If you have your data in geographic coordinates (longitude, latitude), you may ...
 
@@ -122,6 +144,11 @@ scn.Aggregate(projected)
 ```
 
 Keep in mind that *sydney* expects longitude and latitude values in radians, not degrees, so you will have to pre-multiply your data with `math.Pi / 180.0` if your values are in degrees.
+
+
+# Generated output
+
+![Generated output](output.png)
 
 
 ## Q and A

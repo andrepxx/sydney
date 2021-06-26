@@ -75,7 +75,7 @@ func (this *mercatorProjectionStruct) ForwardSingle(dst *coordinates.Cartesian, 
 		return fmt.Errorf("%s", "Src and dst must be non-nil")
 	} else {
 		longitude := src.Longitude()
-		latitude := loc.Latitude()
+		latitude := src.Latitude()
 		x := longitude / MATH_TWO_PI
 		latA := 0.5 * latitude
 		latB := MATH_QUARTER_PI + latA
@@ -140,6 +140,7 @@ func (this *mercatorProjectionStruct) InverseSingle(dst *coordinates.Geographic,
 		yD := 2.0 * yC
 		latitude := yD - MATH_HALF_PI
 		*dst = coordinates.CreateGeographic(longitude, latitude)
+		return nil
 	}
 
 }

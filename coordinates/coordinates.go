@@ -1,39 +1,23 @@
 package coordinates
 
 /*
- * Interface type representing geographic coordinates as longitude and latitude.
+ * Data structure representing geographic coordinates as longitude and latitude.
  *
  * By convention, values are stored in radians.
  *
  * Geographic locations are immutable.
  */
-type Geographic interface {
-	Latitude() float64
-	Longitude() float64
-}
-
-/*
- * Interface type representing a two-dimensional vector in Cartesian coordinates.
- *
- * Vectors are immutable.
- */
-type Cartesian interface {
-	X() float64
-	Y() float64
-}
-
-/*
- * Data structure representing geographic coordinates as longitude and latitude.
- */
-type geographicStruct struct {
+type Geographic struct {
 	latitude  float64
 	longitude float64
 }
 
 /*
  * Data structure representing a 2-dimensional vector in Cartesian coordinates.
+ *
+ * Vectors are immutable.
  */
-type cartesianStruct struct {
+type Cartesian struct {
 	x float64
 	y float64
 }
@@ -42,7 +26,7 @@ type cartesianStruct struct {
  * Returns the latitude value of this geographic location.
  * By convention, this value is in radians.
  */
-func (this geographicStruct) Latitude() float64 {
+func (this *Geographic) Latitude() float64 {
 	return this.latitude
 }
 
@@ -50,21 +34,21 @@ func (this geographicStruct) Latitude() float64 {
  * Returns the longitude value of this geographic location.
  * By convention, this value is in radians.
  */
-func (this geographicStruct) Longitude() float64 {
+func (this *Geographic) Longitude() float64 {
 	return this.longitude
 }
 
 /*
  * Returns the abscissa (x-coordinate) of this two-dimensional Cartesian vector.
  */
-func (this cartesianStruct) X() float64 {
+func (this *Cartesian) X() float64 {
 	return this.x
 }
 
 /*
  * Returns the ordinate (y-coordinate) of this two-dimensional Cartesian vector.
  */
-func (this cartesianStruct) Y() float64 {
+func (this *Cartesian) Y() float64 {
 	return this.y
 }
 
@@ -77,7 +61,7 @@ func CreateGeographic(longitude float64, latitude float64) Geographic {
 	/*
 	 * Create a new geographic location with longitude and latitude.
 	 */
-	geo := geographicStruct{
+	geo := Geographic{
 		latitude:  latitude,
 		longitude: longitude,
 	}
@@ -94,7 +78,7 @@ func CreateCartesian(x float64, y float64) Cartesian {
 	/*
 	 * Create a new two-dimensional vector in Cartesian coordinates.
 	 */
-	vec := cartesianStruct{
+	vec := Cartesian{
 		x: x,
 		y: y,
 	}

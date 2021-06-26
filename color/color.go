@@ -171,7 +171,7 @@ func SimpleMapping(red uint8, green uint8, blue uint8) Mapping {
 	/*
 	 * Create forground color.
 	 */
-	c := color.NRGBA {
+	c := color.NRGBA{
 		R: red,
 		G: green,
 		B: blue,

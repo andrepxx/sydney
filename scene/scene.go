@@ -12,7 +12,7 @@ import (
  * A scene is a plane onto which points are drawn.
  */
 type Scene interface {
-	Aggregate(data []coordinates.Cartesian) error
+	Aggregate(data []coordinates.Cartesian)
 	Clear()
 	Render(mapping color.Mapping) (*image.NRGBA, error)
 	Spread(amount uint8)
@@ -56,7 +56,7 @@ func (this *sceneStruct) index(x uint32, y uint32) (uint64, bool) {
 /*
  * Aggregate data into the scene.
  */
-func (this *sceneStruct) Aggregate(data []coordinates.Cartesian) error {
+func (this *sceneStruct) Aggregate(data []coordinates.Cartesian) {
 	minX := this.minX
 	maxX := this.maxX
 	width := this.width
@@ -69,54 +69,38 @@ func (this *sceneStruct) Aggregate(data []coordinates.Cartesian) error {
 	scaleY := heightFloat / (maxY - minY)
 
 	/*
-	 * Make sure data array is not nil.
+	 * Iterate over all data points.
 	 */
-	if data == nil {
-		return fmt.Errorf("%s", "Data array must not be nil!")
-	} else {
+	for i := range data {
+		point := &data[i]
+		x := point.X()
+		y := point.Y()
 
 		/*
-		 * Iterate over all data points.
+		 * Check if point lies within plot bounds.
 		 */
-		for _, point := range data {
+		if ((x >= minX) && (x < maxX)) && ((y > minY) && (y <= maxY)) {
+			plotX := uint32((x - minX) * scaleX)
+			plotY := uint32((maxY - y) * scaleY)
+			idx, ok := this.index(plotX, plotY)
 
 			/*
-			 * Make sure the data point is not nil.
+			 * Check if point can be mapped to bin.
 			 */
-			if point != nil {
-				x := point.X()
-				y := point.Y()
+			if ok {
+				val := this.bins[idx]
 
 				/*
-				 * Check if point lies within plot bounds.
+				 * Make sure we are not exceeding datatype bounds.
 				 */
-				if ((x >= minX) && (x < maxX)) && ((y > minY) && (y <= maxY)) {
-					plotX := uint32((x - minX) * scaleX)
-					plotY := uint32((maxY - y) * scaleY)
-					idx, ok := this.index(plotX, plotY)
-
-					/*
-					 * Check if point can be mapped to bin.
-					 */
-					if ok {
-						val := this.bins[idx]
-
-						/*
-						 * Make sure we are not exceeding datatype bounds.
-						 */
-						if val < math.MaxUint32 {
-							this.bins[idx] = val + 1
-						}
-
-					}
-
+				if val < math.MaxUint32 {
+					this.bins[idx] = val + 1
 				}
 
 			}
 
 		}
 
-		return nil
 	}
 
 }
@@ -214,7 +198,7 @@ func (this *sceneStruct) Render(mapping color.Mapping) (*image.NRGBA, error) {
  * Spreads data over multiple cells.
  */
 func (this *sceneStruct) Spread(amount uint8) {
-	
+
 	/*
 	 * Only spread if needed.
 	 */
@@ -225,32 +209,32 @@ func (this *sceneStruct) Spread(amount uint8) {
 		height := this.height
 		width := this.width
 		amount64 := int64(amount)
-		
+
 		/*
 		 * Iterate over the target rows.
 		 */
 		for y := uint32(0); y < height; y++ {
 			y64 := int64(y)
-			
+
 			/*
 			 * Iterate over the target columns.
 			 */
 			for x := uint32(0); x < width; x++ {
 				x64 := int64(x)
 				sum := uint64(0)
-				
+
 				/*
 				 * Spread across rows.
 				 */
 				for j := -amount64; j <= amount64; j++ {
-					
+
 					/*
 					 * Spread across columns.
 					 */
 					for i := -amount64; i <= amount64; i++ {
 						xx64 := x64 + i
 						yy64 := y64 + j
-						
+
 						/*
 						 * Check if values are in range.
 						 */
@@ -259,41 +243,41 @@ func (this *sceneStruct) Spread(amount uint8) {
 							yy := uint32(yy64)
 							idxSource, ok := this.index(xx, yy)
 							sumOld := sum
-							
+
 							/*
 							 * Check if index is in range.
 							 */
 							if ok {
 								sum += bins[idxSource]
-								
+
 								/*
 								 * Check for overflow.
 								 */
 								if sum < sumOld {
 									sum = math.MaxUint64
 								}
-								
+
 							}
-							
+
 						}
-						
+
 					}
-					
+
 				}
-				
+
 				idxTarget, ok := this.index(x, y)
-				
+
 				/*
 				 * Check if index was calculated.
 				 */
 				if ok {
 					binsNew[idxTarget] = sum
 				}
-				
+
 			}
-			
+
 		}
-		
+
 		this.bins = binsNew
 	}
 

@@ -21,7 +21,9 @@ const (
  */
 type Projection interface {
 	Forward(dst []coordinates.Cartesian, src []coordinates.Geographic) error
+	ForwardSingle(dst *coordinates.Cartesian, src *coordinates.Geographic) error
 	Inverse(dst []coordinates.Geographic, src []coordinates.Cartesian) error
+	InverseSingle(dst *coordinates.Geographic, src *coordinates.Cartesian) error
 }
 
 /*
@@ -31,8 +33,8 @@ type mercatorProjectionStruct struct {
 }
 
 /*
- * Project geographic coordinates in longitude and latitude to points on a map using
- * the Mercator projection.
+ * Project geographic coordinates in longitude and latitude to points on a map
+ * using the Mercator projection.
  */
 func (this *mercatorProjectionStruct) Forward(dst []coordinates.Cartesian, src []coordinates.Geographic) error {
 	numSrc := len(src)
@@ -49,16 +51,9 @@ func (this *mercatorProjectionStruct) Forward(dst []coordinates.Cartesian, src [
 		 * Project all data points.
 		 */
 		for i := range src {
-			loc := &src[i]
-			longitude := loc.Longitude()
-			latitude := loc.Latitude()
-			x := longitude / MATH_TWO_PI
-			latA := 0.5 * latitude
-			latB := MATH_QUARTER_PI + latA
-			latC := math.Tan(latB)
-			latD := math.Log(latC)
-			y := latD / MATH_TWO_PI
-			dst[i] = coordinates.CreateCartesian(x, y)
+			srcPtr := &src[i]
+			dstPtr := &dst[i]
+			this.ForwardSingle(dstPtr, srcPtr)
 		}
 
 		return nil
@@ -66,8 +61,36 @@ func (this *mercatorProjectionStruct) Forward(dst []coordinates.Cartesian, src [
 }
 
 /*
- * Project points on a map to geographic coordinates in longitude and latitude using
- * the Mercator projection.
+ * Project geographic coordinates in longitude and latitude to a point on a map
+ * using the Mercator projection.
+ *
+ * If src == nil or dst == nil, this is a no-op.
+ */
+func (this *mercatorProjectionStruct) ForwardSingle(dst *coordinates.Cartesian, src *coordinates.Geographic) error {
+
+	/*
+	 * Make sure source and destination are valid.
+	 */
+	if src == nil || dst == nil {
+		return fmt.Errorf("%s", "Src and dst must be non-nil")
+	} else {
+		longitude := src.Longitude()
+		latitude := loc.Latitude()
+		x := longitude / MATH_TWO_PI
+		latA := 0.5 * latitude
+		latB := MATH_QUARTER_PI + latA
+		latC := math.Tan(latB)
+		latD := math.Log(latC)
+		y := latD / MATH_TWO_PI
+		*dst = coordinates.CreateCartesian(x, y)
+		return nil
+	}
+
+}
+
+/*
+ * Project points on a map to geographic coordinates in longitude and latitude
+ * using the Mercator projection.
  */
 func (this *mercatorProjectionStruct) Inverse(dst []coordinates.Geographic, src []coordinates.Cartesian) error {
 	numSrc := len(src)
@@ -84,19 +107,39 @@ func (this *mercatorProjectionStruct) Inverse(dst []coordinates.Geographic, src 
 		 * Project all data points.
 		 */
 		for i := range src {
-			loc := &src[i]
-			x := loc.X()
-			y := loc.Y()
-			longitude := MATH_TWO_PI * x
-			yA := MATH_TWO_PI * y
-			yB := math.Exp(yA)
-			yC := math.Atan(yB)
-			yD := 2.0 * yC
-			latitude := yD - MATH_HALF_PI
-			dst[i] = coordinates.CreateGeographic(longitude, latitude)
+			srcPtr := &src[i]
+			dstPtr := &dst[i]
+			this.InverseSingle(dstPtr, srcPtr)
 		}
 
 		return nil
+	}
+
+}
+
+/*
+ * Project a point on a map to geographic coordinates in longitude and latitude
+ * using the Mercator projection.
+ *
+ * If src == nil or dst == nil, this is a no-op.
+ */
+func (this *mercatorProjectionStruct) InverseSingle(dst *coordinates.Geographic, src *coordinates.Cartesian) error {
+
+	/*
+	 * Make sure source and destination are valid.
+	 */
+	if src == nil || dst == nil {
+		return fmt.Errorf("%s", "Src and dst must be non-nil")
+	} else {
+		x := src.X()
+		y := src.Y()
+		longitude := MATH_TWO_PI * x
+		yA := MATH_TWO_PI * y
+		yB := math.Exp(yA)
+		yC := math.Atan(yB)
+		yD := 2.0 * yC
+		latitude := yD - MATH_HALF_PI
+		*dst = coordinates.CreateGeographic(longitude, latitude)
 	}
 
 }

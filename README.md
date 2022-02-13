@@ -132,12 +132,17 @@ import "github.com/andrepxx/sydney/projection"
 ```golang
 data := make([]coordinates.Geographic, 100000)
 // TODO: Fill the data slice.
-proj := projection.Mercator()
 numPoints := len(data)
 projected := make([]coordinates.Cartesian, numPoints)
+proj := projection.Mercator()
+err := proj.Forward(projected, data)
 
-for i, elem := range(data) {
-	projected[i] = proj.Forward(elem)
+/*
+ * Check for errors.
+ */
+if err != nil {
+	msg := err.Error()
+	fmt.Printf("Error during projection: %s", msg)
 }
 
 scn.Aggregate(projected)

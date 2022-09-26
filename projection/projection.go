@@ -58,6 +58,7 @@ func (this *mercatorProjectionStruct) Forward(dst []coordinates.Cartesian, src [
 
 		return nil
 	}
+
 }
 
 /*

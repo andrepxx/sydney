@@ -53,7 +53,14 @@ scn.Aggregate(data)
 You may call `scn.Aggregate(...)` multiple times to aggregate data in a streaming manner so that you don't have to generate / load all data points in advance and keep them in memory. You may call `scn.Clear()` to clear all data from the scene and re-use the scene object to render new data, as long as your viewport and image dimensions don't change.
 
 
-5. Create a color mapping and render the data into an image.
+5. Spread the points to make them larger.
+
+```golang
+scn.Spread(1)
+```
+
+
+6. Create a color mapping and render the data into an image.
 
 A color mapping is responsible for mapping point densities to colors in the image. The default color mapping will map areas with low point densities to dark, cold colors (e. g. dark blue) and areas with high point densities to bright, hot colors (e. g. yellow or white). The mapping will be done in a logarithmic fashion and scale automatically to the highest and lowest densities found in the current scene to make best use of the available dynamic range.
 
@@ -73,7 +80,7 @@ if err != nil {
 Since `color.Mapping` is an interface, you can easily implement your own custom color mapping.
 
 
-6. Draw the data as an overlay on a background image.
+7. Draw the data as an overlay on a background image.
 
 The resulting image will be transparent, so you will probably want to overlay it on some background. We will choose a black background here and draw our rendered image data over it.
 
@@ -97,7 +104,7 @@ draw.Draw(target, dim, img, image.ZP, draw.Over)
 ```
 
 
-7. Serializing into a PNG file.
+8. Serializing into a PNG file.
 
 ```golang
 enc := png.Encoder{
@@ -119,7 +126,7 @@ if err != nil {
 ```
 
 
-8. Working with geographic data.
+9. Working with geographic data.
 
 Since *sydney* was designed to work with large sets of geographic data, it has inbuilt support for projecting such data into a Cartesian coordinate system. If you have your data in geographic coordinates (longitude, latitude), you may ...
 

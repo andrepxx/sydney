@@ -238,7 +238,7 @@ func (this *sceneStruct) Spread(amount uint8) {
 						/*
 						 * Check if values are in range.
 						 */
-						if xx64 > 0 && xx64 <= math.MaxUint32 && yy64 > 0 && yy64 < math.MaxUint32 {
+						if xx64 >= 0 && xx64 <= math.MaxUint32 && yy64 >= 0 && yy64 <= math.MaxUint32 {
 							xx := uint32(xx64)
 							yy := uint32(yy64)
 							idxSource, ok := this.index(xx, yy)
